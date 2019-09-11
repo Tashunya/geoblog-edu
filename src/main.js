@@ -14,7 +14,9 @@ Vue.use(VueFetch, {
   baseUrl: 'http://localhost:3000/',
 })
 
-function main() {
+async function main() {
+  await store.dispatch('init')
+  
   new Vue({
     ...App,
     el: '#app',
