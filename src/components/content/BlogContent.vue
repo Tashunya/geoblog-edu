@@ -16,7 +16,7 @@ export default {
       'draft',
       'currentPost',
     ]),
-    cssClass() {
+    cssClass () {
       return [
         'blog-content',
         {
@@ -25,7 +25,7 @@ export default {
       ]
     },
   },
-
+  
   render (h) {
     let Content
     if (!this.currentPost) {
@@ -35,10 +35,9 @@ export default {
     } else {
       Content = PostContent
     }
-
     return <div class={this.cssClass}>
-    <LocationInfo />
-    <Content />
+      <LocationInfo />
+      <Content />
     </div>
   },
 }

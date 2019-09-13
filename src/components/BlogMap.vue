@@ -7,15 +7,27 @@
       :options="mapOptions"
       @update:center="setCenter"
       @update:zoom="setZoom"
-      @idle="onIdle"
       @click="onMapClick"
     >
       <!-- User Position -->
       <googlemaps-user-position
         @update:position="setUserPosition"
       />
-  </googlemaps-map>
-</div>
+
+      <googlemaps-marker
+        v-if="draft"
+        :clickable="false"
+        :label="{
+          color: 'white',
+          fontFamily: 'Material Icons',
+          text: 'add_circle',
+          }"
+        :opacity=".75"
+        :position="draft.position"
+        :z-index="6"
+      />
+    </googlemaps-map>
+  </div>
 </template>
 
 <script>
@@ -28,11 +40,19 @@ const {
   mapActions: mapsActions,
 } = createNamespacedHelpers('maps')
 
+const {
+  mapGetters: postsGetters,
+  mapActions: postsActions,
+} = createNamespacedHelpers('posts')
+
 export default {
   computed: {
     ...mapsGetters([
       'center',
       'zoom',
+    ]),
+    ...postsGetters([
+      'draft',
     ]),
 
     mapOptions() {
@@ -48,6 +68,17 @@ export default {
       'setUserPosition',
       'setZoom',
     ]),
-  }
+
+    ...postsActions([
+      'setDraftLocation',
+    ]),
+
+    onMapClick (event) {
+      this.setDraftLocation({
+        postiton: event.latLng,
+        placeId: event.placeId,
+      })
+    },
+  },
 }
 </script>
