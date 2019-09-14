@@ -1,43 +1,72 @@
 import { $fetch } from '../plugins/fetch'
 
-export default {
-    namespaced: true,
+let fetchPostsUid = 0
 
-  state() {
+export default {
+  namespaced: true,
+
+  state () {
     return {
+      // New post being created
       draft: null,
+      // Bounds of the last fetching
+      // To prevent refetching
       mapBounds: null,
+      // Posts fetched in those map bounds
       posts: [],
+      // ID of the selected post
       selectedPostId: null,
+      // Fetched details for the selected post
+      selectedPostDetails: null,
     }
   },
 
   getters: {
     draft: state => state.draft,
     posts: state => state.posts,
+    // The id field on posts is '_id' (MongoDB style)
     selectedPost: state => state.posts.find(p => p._id === state.selectedPostId),
+    selectedPostDetails: state => state.selectedPostDetails,
+    // The draft has more priority than the selected post
     currentPost: (state, getters) => state.draft || getters.selectedPost,
   },
 
   mutations: {
-    addPost(state, value) {
+    addPost (state, value) {
       state.posts.push(value)
     },
 
-    draft(state, value) {
+    addComment (state, { post, comment }) {
+      post.comments.push(comment)
+    },
+
+    draft (state, value) {
       state.draft = value
     },
 
-    posts(state, { posts, mapBounds }) {
+    likePost (state, { post, userId }) {
+      const index = post.likes.indexOf(userId)
+      if (index !== -1) {
+        post.likes.splice(index, 1)
+      } else {
+        post.likes.push(userId)
+      }
+    },
+
+    posts (state, { posts, mapBounds }) {
       state.posts = posts
       state.mapBounds = mapBounds
     },
 
-    selectedPostId(state, value) {
+    selectedPostId (state, value) {
       state.selectedPostId = value
     },
 
-    updateDraft(state, value) {
+    selectedPostDetails (state, value) {
+      state.selectedPostDetails = value
+    },
+
+    updateDraft (state, value) {
       Object.assign(state.draft, value)
     },
   },
@@ -60,17 +89,70 @@ export default {
     async createPost ({ commit, dispatch }, draft) {
       const data = {
         ...draft,
+        // We need to get the object form
         position: draft.position.toJSON(),
       }
 
+      // Request
       const result = await $fetch('posts/new', {
         method: 'POST',
-        body: JSON.stringidy(data),
+        body: JSON.stringify(data),
       })
       dispatch('clearDraft')
 
-      comiit('addPost', result)
+      // Update the posts list
+      commit('addPost', result)
       dispatch('selectPost', result._id)
+    },
+
+    async fetchPosts ({ commit, state }, { mapBounds, force }) {
+      let oldBounds = state.mapBounds
+      if (force || !oldBounds || !oldBounds.equals(mapBounds)) {
+        const requestId = ++fetchPostsUid
+
+        // Request
+        const ne = mapBounds.getNorthEast()
+        const sw = mapBounds.getSouthWest()
+        const query = `posts?ne=${
+          encodeURIComponent(ne.toUrlValue())
+        }&sw=${
+          encodeURIComponent(sw.toUrlValue())
+        }`
+        const posts = await $fetch(query)
+
+        // We abort if we started another query
+        if (requestId === fetchPostsUid) {
+          commit('posts', {
+            posts,
+            mapBounds,
+          })
+        }
+      }
+    },
+
+    logout: {
+      handler ({ commit }) {
+        commit('posts', {
+          posts: [],
+          mapBounds: null,
+        })
+      },
+      root: true,
+    },
+
+    'logged-in': {
+      handler ({ dispatch, state }) {
+        if (state.mapBounds) {
+          dispatch('fetchPosts', {
+            mapBounds: state.mapBounds,
+            force: true,
+          })
+        }
+        if (state.selectedPostId) {
+          dispatch('selectPost', state.selectedPostId)
+        }
+      },
+      root: true,
     },
 
     async selectPost ({ commit }, id) {
@@ -78,8 +160,8 @@ export default {
     },
 
     setDraftLocation ({ dispatch, getters }, { position, placeId }) {
-    if (!getters.draft) {
-      dispatch('createDraft')
+      if (!getters.draft) {
+        dispatch('createDraft')
       }
       dispatch('updateDraft', {
         position,

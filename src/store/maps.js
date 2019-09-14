@@ -4,8 +4,8 @@ export default {
   state () {
     return {
       center: {
-        lat: 48.8538302, // 59.9076921
-        lng: 2.2982161, // 30.5341094
+        lat: 48.8538302,
+        lng: 2.2982161,
       },
       userPosition: null,
       zoom: 15,
@@ -32,10 +32,18 @@ export default {
 
   actions: {
     async centerOnUser ({ dispatch, getters }) {
-      const position = getters.UserPosition
+      const position = getters.userPosition
       if (position) {
         dispatch('setCenter', position)
       }
+    },
+
+    setBounds ({ dispatch }, value) {
+      dispatch('posts/fetchPosts', {
+        mapBounds: value,
+      }, {
+        root: true,
+      })
     },
 
     setCenter ({ commit }, value) {
@@ -45,6 +53,7 @@ export default {
     setUserPosition ({ dispatch, commit, getters }, value) {
       const position = getters.userPosition
       commit('userPosition', value)
+      // Initial center on user position
       if (!position) {
         dispatch('centerOnUser')
       }

@@ -50,16 +50,15 @@ const store = new Vuex.Store({
           router.replace(router.currentRoute.params.wantedRoute ||
           { name: 'home' })
 
-          // dispatch('logged-in')
+          dispatch('logged-in')
         }
       } catch (e) {
         console.warn(e)
       }
     },
 
-    logout ({ commit }) {
+    logout ({ commit, dispatch }) {
       commit('user', null)
-
       $fetch('logout')
 
       if (router.currentRoute.matched.some(r => r.meta.private)) {

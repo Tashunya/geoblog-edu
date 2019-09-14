@@ -8,6 +8,7 @@
       @update:center="setCenter"
       @update:zoom="setZoom"
       @click="onMapClick"
+      @idle="onIdle"
     >
       <!-- User Position -->
       <googlemaps-user-position
@@ -26,14 +27,27 @@
         :position="draft.position"
         :z-index="6"
       />
+
+      <googlemaps-marker
+        v-for="post of posts"
+        :key="post._id"
+        :label="{
+        color: post === currentPost ? 'white' : 'black',
+        fontFamily: 'Material Icons',
+        fontSize: '20px',
+        text: 'face',
+        }"
+        :position="post.position"
+        :z-index="5"
+        @click="selectPost(post._id)"
+      />
+
     </googlemaps-map>
   </div>
 </template>
 
 <script>
-import {
-  createNamespacedHelpers
-} from 'vuex'
+import { createNamespacedHelpers } from 'vuex'
 
 const {
   mapGetters: mapsGetters,
@@ -53,6 +67,8 @@ export default {
     ]),
     ...postsGetters([
       'draft',
+      'posts',
+      'currentPost'
     ]),
 
     mapOptions() {
@@ -64,6 +80,7 @@ export default {
 
   methods: {
     ...mapsActions([
+      'setBounds',
       'setCenter',
       'setUserPosition',
       'setZoom',
@@ -72,6 +89,10 @@ export default {
     ...postsActions([
       'setDraftLocation',
     ]),
+
+    onIdle () {
+      this.setBounds(this.$refs.map.getBounds())
+    },
 
     onMapClick (event) {
       this.setDraftLocation({
