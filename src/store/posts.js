@@ -44,14 +44,14 @@ export default {
       state.draft = value
     },
 
-    likePost (state, { post, userId }) {
-      const index = post.likes.indexOf(userId)
-      if (index !== -1) {
-        post.likes.splice(index, 1)
-      } else {
-        post.likes.push(userId)
-      }
-    },
+    // likePost (state, { post, userId }) {
+    //   const index = post.likes.indexOf(userId)
+    //   if (index !== -1) {
+    //     post.likes.splice(index, 1)
+    //   } else {
+    //     post.likes.push(userId)
+    //   }
+    // },
 
     posts (state, { posts, mapBounds }) {
       state.posts = posts
@@ -155,8 +155,11 @@ export default {
       root: true,
     },
 
-    async selectPost ({ commit }, id) {
+    async selectPost ({ commit, getters }, id) {
+      commit('selectedPostDetails', null)
       commit('selectedPostId', id)
+      const details = await $fetch(`posts/${id}`)
+      commit('selectedPostDetails', details)
     },
 
     setDraftLocation ({ dispatch, getters }, { position, placeId }) {
@@ -167,6 +170,27 @@ export default {
         position,
         placeId,
       })
+    },
+
+    async sendComment({ commit, rootGetters }, { post, comment }) {
+      const user = rootGetters.user
+      commit('addComment', {
+        post,
+        comment: {
+          ...comment,
+          date: new Date(),
+          user_id: user._id,
+          author: user,
+        },
+      })
+      await $fetch(`posts/${post._id}/comment`, {
+        method: 'POST',
+        body: JSON.stringify(comment),
+      })
+    },
+
+    unselectPost ({ commit }) {
+      commit('selectedPostId', null)
     },
 
     updateDraft ({ dispatch, commit, getters }, draft) {
