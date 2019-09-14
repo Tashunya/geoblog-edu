@@ -62,6 +62,7 @@
 <script>
 import Comment from './Comment.vue'
 import { createNamespacedHelpers } from 'vuex'
+
 // posts module
 const {
   mapGetters: postsGetters,
@@ -72,11 +73,13 @@ export default {
   components: {
     Comment,
   },
+
   data () {
     return {
       commentContent: '',
     }
   },
+
   computed: {
     ...postsGetters({
       details: 'selectedPostDetails',
@@ -86,22 +89,22 @@ export default {
       return this.commentContent
     },
 
-    // hasLiked () {
-    //   return this.details.likes.includes(
-    //     this.userId
-    //   )
-    // },
-    //
-    // userId () {
-    //   // Example of store direct access
-    //   // This should be a getter though
-    //   return this.$store.getters.user._id
-    // },
+    hasLiked () {
+      return this.details.likes.includes(
+        this.userId
+      )
+    },
+
+    userId () {
+      // Example of store direct access
+      // This should be a getter though
+      return this.$store.getters.user._id
+    },
   },
 
   methods: {
     ...postsActions([
-      // 'likePost',
+      'likePost',
       'sendComment',
       'unselectPost',
     ]),
@@ -118,9 +121,9 @@ export default {
       }
     },
 
-    // toggleLike () {
-    //   this.likePost(this.details)
-    // },
+    toggleLike () {
+      this.likePost(this.details)
+    },
   },
 }
 </script>

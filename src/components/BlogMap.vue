@@ -7,8 +7,8 @@
       :options="mapOptions"
       @update:center="setCenter"
       @update:zoom="setZoom"
-      @click="onMapClick"
       @idle="onIdle"
+      @click="onMapClick"
     >
       <!-- User Position -->
       <googlemaps-user-position
@@ -16,32 +16,32 @@
       />
 
       <googlemaps-marker
-        v-if="draft"
-        :clickable="false"
-        :label="{
-          color: 'white',
-          fontFamily: 'Material Icons',
-          text: 'add_circle',
-          }"
-        :opacity=".75"
-        :position="draft.position"
-        :z-index="6"
-      />
-
-      <googlemaps-marker
         v-for="post of posts"
         :key="post._id"
         :label="{
-        color: post === currentPost ? 'white' : 'black',
-        fontFamily: 'Material Icons',
-        fontSize: '20px',
-        text: 'face',
+          color: post === currentPost ? 'white' : 'black',
+          fontFamily: 'Material Icons',
+          fontSize: '20px',
+          text: 'face',
         }"
         :position="post.position"
         :z-index="5"
         @click="selectPost(post._id)"
       />
 
+      <!-- New post marker -->
+      <googlemaps-marker
+        v-if="draft"
+        :clickable="false"
+        :label="{
+          color: 'white',
+          fontFamily: 'Material Icons',
+          text: 'add_circle',
+        }"
+        :opacity=".75"
+        :position="draft.position"
+        :z-index="6"
+      />
     </googlemaps-map>
   </div>
 </template>
@@ -68,10 +68,10 @@ export default {
     ...postsGetters([
       'draft',
       'posts',
-      'currentPost'
+      'currentPost',
     ]),
 
-    mapOptions() {
+    mapOptions () {
       return {
         fullscreenControl: false,
       }
@@ -87,6 +87,7 @@ export default {
     ]),
 
     ...postsActions([
+      'selectPost',
       'setDraftLocation',
     ]),
 
@@ -96,7 +97,7 @@ export default {
 
     onMapClick (event) {
       this.setDraftLocation({
-        postiton: event.latLng,
+        position: event.latLng,
         placeId: event.placeId,
       })
     },

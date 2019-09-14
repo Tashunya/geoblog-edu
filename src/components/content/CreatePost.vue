@@ -34,16 +34,19 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
+
 // posts module
 const {
   mapGetters: postsGetters,
   mapActions: postsActions,
 } = createNamespacedHelpers('posts')
+
 export default {
   computed: {
     ...postsGetters([
       'draft',
     ]),
+
     title: {
       get () {
         return this.draft.title
@@ -55,6 +58,7 @@ export default {
         })
       },
     },
+
     content: {
       get () {
         return this.draft.content
@@ -66,16 +70,19 @@ export default {
         })
       },
     },
+
     formValid () {
       return this.title && this.content
     },
   },
+
   methods: {
     ...postsActions([
       'clearDraft',
       'createPost',
       'updateDraft',
     ]),
+
     handleSubmit () {
       if (this.formValid) {
         this.createPost(this.draft)

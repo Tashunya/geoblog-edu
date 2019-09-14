@@ -1,7 +1,9 @@
 <script>
 import { date } from '../../filters'
+
 export default {
   functional: true,
+
   render (h, { props }) {
     const { comment } = props
     return <div class="comment">

@@ -32,14 +32,17 @@
 <script>
 import PlaceDetails from './PlaceDetails.vue'
 import { createNamespacedHelpers } from 'vuex'
+
 // posts module
 const {
   mapGetters: postsGetters,
 } = createNamespacedHelpers('posts')
+
 export default {
   components: {
     PlaceDetails,
   },
+
   computed: postsGetters([
     'currentPost',
   ]),
