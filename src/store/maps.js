@@ -39,6 +39,7 @@ export default {
     },
 
     setBounds ({ dispatch }, value) {
+      console.log('updateBounds')
       dispatch('posts/fetchPosts', {
         mapBounds: value,
       }, {

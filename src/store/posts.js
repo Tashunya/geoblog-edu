@@ -44,14 +44,14 @@ export default {
       state.draft = value
     },
 
-    // likePost (state, { post, userId }) {
-    //   const index = post.likes.indexOf(userId)
-    //   if (index !== -1) {
-    //     post.likes.splice(index, 1)
-    //   } else {
-    //     post.likes.push(userId)
-    //   }
-    // },
+    likePost (state, { post, userId }) {
+      const index = post.likes.indexOf(userId)
+      if (index !== -1) {
+        post.likes.splice(index, 1)
+      } else {
+        post.likes.push(userId)
+      }
+    },
 
     posts (state, { posts, mapBounds }) {
       state.posts = posts
@@ -130,14 +130,15 @@ export default {
       }
     },
 
-    logout: {
-      handler ({ commit }) {
-        commit('posts', {
-          posts: [],
-          mapBounds: null,
-        })
-      },
-      root: true,
+    async likePost ({ commit, rootGetters }, post) {
+      const userId = rootGetters.user._id
+      commit('likePost', {
+        post,
+        userId,
+      })
+      await $fetch(`posts/${post._id}/like`, {
+        method: 'POST',
+      })
     },
 
     'logged-in': {
@@ -155,21 +156,21 @@ export default {
       root: true,
     },
 
+    logout: {
+      handler ({ commit }) {
+        commit('posts', {
+          posts: [],
+          mapBounds: null,
+        })
+      },
+      root: true,
+    },
+
     async selectPost ({ commit, getters }, id) {
       commit('selectedPostDetails', null)
       commit('selectedPostId', id)
       const details = await $fetch(`posts/${id}`)
       commit('selectedPostDetails', details)
-    },
-
-    setDraftLocation ({ dispatch, getters }, { position, placeId }) {
-      if (!getters.draft) {
-        dispatch('createDraft')
-      }
-      dispatch('updateDraft', {
-        position,
-        placeId,
-      })
     },
 
     async sendComment({ commit, rootGetters }, { post, comment }) {
@@ -183,9 +184,20 @@ export default {
           author: user,
         },
       })
+
       await $fetch(`posts/${post._id}/comment`, {
         method: 'POST',
         body: JSON.stringify(comment),
+      })
+    },
+
+    setDraftLocation ({ dispatch, getters }, { position, placeId }) {
+      if (!getters.draft) {
+        dispatch('createDraft')
+      }
+      dispatch('updateDraft', {
+        position,
+        placeId,
       })
     },
 
